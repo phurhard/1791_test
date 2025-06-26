@@ -10,7 +10,7 @@ from api.core.settings import settings
 import bcrypt
 
 # OAuth2 scheme for token authentication
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="users/login")
 
 # Function to create a JWT token
 def create_access_token(data: dict, expires_delta: int = 10) -> str:

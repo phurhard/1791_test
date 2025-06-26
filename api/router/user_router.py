@@ -6,7 +6,7 @@ from api.services.user_service import create_user, get_user, get_users, update_u
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
-@router.post("/token", response_model=TokenResponse)
+@router.post("/login", response_model=TokenResponse)
 def login_for_access_token(user_login: UserLogin, db: Session = Depends(init_db)):
     """
     Authenticate user and return access and refresh tokens.
