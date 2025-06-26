@@ -1,12 +1,12 @@
-from pydantic import BaseModel, EmailStr, ConfigDict
+from pydantic import BaseModel, EmailStr, ConfigDict, Field
 from typing import Optional
 from datetime import datetime
 
 class UserCreate(BaseModel):
-    username: str
-    email: EmailStr
-    password: str
-    name: str
+    username: str = Field(..., min_length=4)
+    email: EmailStr = Field(..., min_length=5)
+    password: str = Field(..., min_length=5)
+    name: str = Field(..., min_length=5)
 
 class UserUpdate(BaseModel):
     name: str

@@ -1,11 +1,11 @@
 from typing import Optional
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from datetime import datetime
 
 
 class TodoCreate(BaseModel):
-    title: str
-    content: str = None
+    title: str = Field(..., min_length=1)
+    content: str = Field(..., min_length=5)
     completed: bool = False
 
 
