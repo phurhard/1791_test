@@ -21,7 +21,7 @@ def update_todo(db: Session, todo_id: str, todo: TodoUpdate, user_id: str) -> Op
     db_todo = db.query(Todo).filter(Todo.id == todo_id).first()
     if db_todo and str(db_todo.user_id) == user_id:
         if db_todo:
-            for var, value in vars(todo).items():
+            for var, value in todo.model_dump(exclude_unset=True).items():
                 setattr(db_todo, var, value)
         db.commit()
         db.refresh(db_todo)
