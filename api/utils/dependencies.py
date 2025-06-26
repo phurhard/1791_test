@@ -11,7 +11,7 @@ from api.core.settings import settings
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 # Function to create a JWT token
-def create_access_token(data: dict, expires_delta: int = 10):
+def create_access_token(data: dict, expires_delta: int = 10) -> str:
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.now(timezone.utc) + timedelta(minutes=expires_delta)
@@ -22,9 +22,9 @@ def create_access_token(data: dict, expires_delta: int = 10):
     return encoded_jwt
 
 # Function to decode a JWT token
-def decode_token(token: str):
+def decode_token(token: str) -> str:
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        payload: dict = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         user_id: str = payload.get("sub")
         if user_id is None:
             raise HTTPException(
@@ -43,7 +43,7 @@ def decode_token(token: str):
         )
 
 # Dependency to get current user from token
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(init_db)):
+def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(init_db)) -> User:
     try:
         user_id = decode_token(token)
         user = db.query(User).filter(User.id == user_id).first()
