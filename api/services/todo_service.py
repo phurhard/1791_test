@@ -2,7 +2,7 @@ from typing import Optional, List
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from api.models.model import Todo
-from api.schemas.todo import TodoCreate, TodoResponse
+from api.schemas.todo import TodoCreate, TodoResponse, TodoUpdate
 
 def create_todo(db: Session, todo: TodoCreate, user_id: str) -> Todo:
     db_todo = Todo(content=todo.content, user_id=user_id, title=todo.title)
@@ -17,7 +17,7 @@ def get_todo(db: Session, todo_id: str) -> Optional[Todo]:
 def get_todos(db: Session, skip: int = 0, limit: int = 100) -> List[Todo]:
     return db.query(Todo).offset(skip).limit(limit).all()
 
-def update_todo(db: Session, todo_id: str, todo: TodoCreate, user_id: str) -> Optional[Todo]:
+def update_todo(db: Session, todo_id: str, todo: TodoUpdate, user_id: str) -> Optional[Todo]:
     db_todo = db.query(Todo).filter(Todo.id == todo_id).first()
     if db_todo and str(db_todo.user_id) == user_id:
         if db_todo:
