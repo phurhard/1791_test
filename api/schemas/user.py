@@ -1,20 +1,18 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from datetime import datetime
 
 class UserCreate(BaseModel):
     username: str
-    email: str
+    email: EmailStr
     password: str
     name: str
 
 class UserUpdate(BaseModel):
-    username: str
+    name: str
 
 class UserResponse(BaseModel):
     id: str
     username: str
-    email: str
+    name: str
+    email: EmailStr
     created_at: datetime
-
-class UserDB(UserResponse):
-    password_hash: str

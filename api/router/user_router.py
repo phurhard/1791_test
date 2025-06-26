@@ -1,15 +1,22 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from api.database.database import init_db
 from api.schemas.user import UserCreate, UserUpdate, UserResponse
 from api.services.user_service import create_user, get_user, get_users, update_user, delete_user
-from api.utils.dependencies import get_current_user
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
 @router.post("/", response_model=UserResponse)
 def create_user_endpoint(user: UserCreate, db: Session = Depends(init_db)):
-    return create_user(db, user)
+    try:
+        return create_user(db, user)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"{str(e)}"
+        )
 
 @router.get("/{user_id}", response_model=UserResponse)
 def read_user_endpoint(user_id: str, db: Session = Depends(init_db)):
@@ -24,15 +31,18 @@ def read_users_endpoint(skip: int = 0, limit: int = 100, db: Session = Depends(i
     return users
 
 @router.put("/{user_id}", response_model=UserResponse)
-def update_user_endpoint(user_id: str, user: UserCreate, db: Session = Depends(init_db)):
-    updated_user = update_user(db, user_id, UserUpdate(**user.model_dump()))
-    if updated_user is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    return updated_user
+def update_user_endpoint(user_id: str, user: UserUpdate, db: Session = Depends(init_db)):
+    try:
+        updated_user = update_user(db, user_id, user)
+        if updated_user is None:
+            raise HTTPException(status_code=404, detail="User not found")
+        return updated_user
+    except HTTPException as e:
+        raise e
 
-@router.delete("/{user_id}", response_model=UserResponse)
+@router.delete("/{user_id}")
 def delete_user_endpoint(user_id: str, db: Session = Depends(init_db)):
     deleted_user = delete_user(db, user_id)
-    if deleted_user is None:
+    if not deleted_user:
         raise HTTPException(status_code=404, detail="User not found")
     return deleted_user

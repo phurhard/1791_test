@@ -6,16 +6,26 @@ from api.models.model import User
 from api.schemas.user import UserCreate, UserUpdate
 from api.utils.dependencies import get_pass_hash
 
-def get_user_by_email(db: Session, email: str, username: str) -> Optional[User]:
+def get_user_by_email(db: Session, email: str) -> Optional[User]:
     return db.query(User).filter(
-        or_(User.email == email, User.username == username)).first()
+        or_(User.email == email)).first()
+
+def get_user_by_username(db: Session, username: str) -> Optional[User]:
+    return db.query(User).filter(
+        or_(User.username == username)).first()
 
 def create_user(db: Session, user: UserCreate) -> User:
-    existing_user = get_user_by_email(db, user.email, user.username)
-    if existing_user:
+    existing_email = get_user_by_email(db, user.email)
+    existing_username = get_user_by_username(db, user.username)
+    if existing_email:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Email/Username already registered"
+            detail="Email already registered"
+        )
+    if existing_username:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Username already registered"
         )
 
     password = get_pass_hash(user.password)
