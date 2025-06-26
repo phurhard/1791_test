@@ -31,9 +31,9 @@ def update_todo_endpoint(todo_id: str, todo: TodoUpdate, db: Session = Depends(i
         raise HTTPException(status_code=404, detail="Todo not found")
     return updated_todo
 
-@router.delete("/{todo_id}", response_model=TodoResponse)
+@router.delete("/{todo_id}")
 def delete_todo_endpoint(todo_id: str, db: Session = Depends(init_db), current_user: User = Depends(get_current_user)):
     deleted_todo = delete_todo(db, todo_id, str(current_user.id))
-    if deleted_todo is None:
+    if not deleted_todo:
         raise HTTPException(status_code=404, detail="Todo not found")
     return deleted_todo
