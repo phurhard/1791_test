@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from api.database.database import init_db
 from api.models.model import User
 from api.core.settings import settings
+import bcrypt
 
 # OAuth2 scheme for token authentication
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -67,3 +68,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
             status_code=e.status_code,
             detail=e.detail
         )
+
+def get_pass_hash(password: str) -> str:
+    """Hash a password using bcrypt."""
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')

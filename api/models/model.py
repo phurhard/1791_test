@@ -17,14 +17,16 @@ class User(BaseModel):
     name = Column(String, nullable=False)
     email = Column(String(100), unique=True, nullable=False, index=True)
     username = Column(String, unique=True, index=True)
-    password_hash = Column(String)
+    password = Column(String)
 
     todos = relationship("Todo", back_populates="user")
 
 class Todo(BaseModel):
     __tablename__ = 'todos'
+    title = Column(String)
     content = Column(Text, nullable=False)
     user_id = Column(String(36), ForeignKey('users.id'), nullable=False)
     completed = Column(Boolean, default=False)
 
     user = relationship("User", back_populates="todos")
+

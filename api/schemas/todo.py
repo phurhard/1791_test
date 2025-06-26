@@ -3,7 +3,7 @@ from datetime import datetime
 
 class TodoCreate(BaseModel):
     title: str
-    description: str = None
+    content: str = None
     completed: bool = False
 
 class TodoResponse(BaseModel):

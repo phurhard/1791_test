@@ -5,10 +5,10 @@ class UserCreate(BaseModel):
     username: str
     email: str
     password: str
+    name: str
 
 class UserUpdate(BaseModel):
     username: str
-    email: str
 
 class UserResponse(BaseModel):
     id: str

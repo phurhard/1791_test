@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from api.models.model import User
 from api.schemas.user import UserCreate, UserUpdate
+from api.utils.dependencies import get_pass_hash
 
 def get_user_by_email(db: Session, email: str, username: str) -> Optional[User]:
     return db.query(User).filter(
@@ -17,7 +18,13 @@ def create_user(db: Session, user: UserCreate) -> User:
             detail="Email/Username already registered"
         )
 
-    db_user = User(**user.model_dump())
+    password = get_pass_hash(user.password)
+    db_user = User(
+        username=user.username,
+        password=password,
+        email=user.email,
+        name=user.name
+    )
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
