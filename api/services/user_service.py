@@ -2,9 +2,10 @@ from typing import Optional, List
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
+from datetime import timedelta
 from api.models.model import User
-from api.schemas.user import UserCreate, UserUpdate
-from api.utils.dependencies import get_pass_hash
+from api.schemas.user import UserCreate, UserUpdate, UserLogin, TokenResponse, UserResponse
+from api.utils.dependencies import get_pass_hash, check_pass_hash, create_access_token
 
 def get_user_by_email(db: Session, email: str) -> Optional[User]:
     """
@@ -137,3 +138,59 @@ def delete_user(db: Session, user_id: str) -> bool:
         db.commit()
         return True
     return False
+
+def authenticate_user(db: Session, username: str, password: str) -> Optional[User]:
+    """
+    Authenticates a user by checking their username and password.
+
+    Args:
+        db (Session): The database session.
+        username (str): The username of the user.
+        password (str): The plain-text password provided by the user.
+
+    Returns:
+        Optional[User]: The user object if authentication is successful, otherwise None.
+    """
+    user = get_user_by_username(db, username)
+    if not user or not check_pass_hash(password, str(user.password)):
+        return None
+    return user
+
+def login_user(db: Session, user_login: UserLogin) -> TokenResponse:
+    """
+    Logs in a user, authenticates them, and generates access and refresh tokens.
+
+    Args:
+        db (Session): The database session.
+        user_login (UserLogin): The user login credentials.
+
+    Returns:
+        TokenResponse: An object containing user details, access token, and refresh token.
+
+    Raises:
+        HTTPException: If authentication fails.
+    """
+    user = authenticate_user(db, user_login.username, user_login.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    access_token_expires = timedelta(minutes=30)
+    refresh_token_expires = timedelta(days=7)
+
+    access_token = create_access_token(
+        data={"sub": str(user.id)}, expires_delta=int(access_token_expires.total_seconds() / 60)
+    )
+    refresh_token = create_access_token(
+        data={"sub": str(user.id)}, expires_delta=int(refresh_token_expires.total_seconds() / 60)
+    )
+
+    return TokenResponse(
+        user=UserResponse.model_validate(user),
+        access_token=access_token,
+        refresh_token=refresh_token,
+        token_type="bearer"
+    )

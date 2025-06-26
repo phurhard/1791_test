@@ -1,4 +1,5 @@
 from fastapi import Depends, HTTPException, status
+from typing import Optional
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt, ExpiredSignatureError
 from datetime import datetime, timedelta, timezone
@@ -26,7 +27,7 @@ def create_access_token(data: dict, expires_delta: int = 10) -> str:
 def decode_token(token: str) -> str:
     try:
         payload: dict = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        user_id: str = payload.get("sub")
+        user_id: Optional[str] = payload.get("sub")
         if user_id is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -72,3 +73,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 def get_pass_hash(password: str) -> str:
     """Hash a password using bcrypt."""
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+def check_pass_hash(password: str, hashed_password: str) -> bool:
+    """Check a password against a hashed password."""
+    return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))

@@ -1,10 +1,28 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from api.database.database import init_db
-from api.schemas.user import UserCreate, UserUpdate, UserResponse
-from api.services.user_service import create_user, get_user, get_users, update_user, delete_user
+from api.schemas.user import UserCreate, UserUpdate, UserResponse, UserLogin, TokenResponse
+from api.services.user_service import create_user, get_user, get_users, update_user, delete_user, login_user
 
 router = APIRouter(prefix="/users", tags=["Users"])
+
+@router.post("/token", response_model=TokenResponse)
+def login_for_access_token(user_login: UserLogin, db: Session = Depends(init_db)):
+    """
+    Authenticate user and return access and refresh tokens.
+
+    Args:
+        user_login (UserLogin): User credentials (username and password).
+        db (Session): Database session.
+
+    Returns:
+        TokenResponse: User details, access token, and refresh token.
+
+    Raises:
+        HTTPException: If authentication fails.
+    """
+    return login_user(db, user_login)
+
 
 @router.post("/", response_model=UserResponse)
 def create_user_endpoint(user: UserCreate, db: Session = Depends(init_db)):
