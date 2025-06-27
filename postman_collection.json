@@ -1,0 +1,431 @@
+{
+  "info": {
+    "name": "Todo Management API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Postman collection for the FastAPI Todo Management API"
+  },
+  "item": [
+    {
+      "name": "User Registration",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/users/", "host": ["{{base_url}}"], "path": ["users", ""] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"testuser@example.com\",\n  \"password\": \"testpassword\",\n  \"name\": \"Test User\"\n}"
+        }
+      },
+      "response": [
+        {
+          "name": "Success",
+          "originalRequest": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/users/", "host": ["{{base_url}}"], "path": ["users", ""] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"testuser@example.com\",\n  \"password\": \"testpassword\",\n  \"name\": \"Test User\"\n}"
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"id\": \"user_id\",\n  \"username\": \"testuser\",\n  \"name\": \"Test User\",\n  \"email\": \"testuser@example.com\",\n  \"created_at\": \"2025-06-27T12:00:00\"\n}"
+        },
+        {
+          "name": "Validation Error",
+          "originalRequest": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/users/", "host": ["{{base_url}}"], "path": ["users", ""] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"t\",\n  \"email\": \"bademail\",\n  \"password\": \"123\",\n  \"name\": \"A\"\n}"
+            }
+          },
+          "status": "Unprocessable Entity",
+          "code": 422,
+          "body": "{\n  \"error\": \"Validation error\",\n  \"details\": [ ... ]\n}"
+        }
+      ]
+    },
+    {
+      "name": "User Login",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/users/login", "host": ["{{base_url}}"], "path": ["users", "login"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"testpassword\"\n}"
+        }
+      },
+      "response": [
+        {
+          "name": "Success",
+          "originalRequest": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/users/login", "host": ["{{base_url}}"], "path": ["users", "login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"testpassword\"\n}"
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"access_token\": \"jwt_token\",\n  \"token_type\": \"bearer\",\n  \"user\": { ... }\n}"
+        },
+        {
+          "name": "Unauthorized",
+          "originalRequest": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/users/login", "host": ["{{base_url}}"], "path": ["users", "login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"wronguser\",\n  \"password\": \"wrongpass\"\n}"
+            }
+          },
+          "status": "Unauthorized",
+          "code": 401,
+          "body": "{\n  \"error\": \"Incorrect username or password\",\n  \"type\": \"HTTPException\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Get User by ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "url": { "raw": "{{base_url}}/users/{{user_id}}", "host": ["{{base_url}}"], "path": ["users", "{{user_id}}"] }
+      },
+      "response": [
+        {
+          "name": "Success",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/users/{{user_id}}", "host": ["{{base_url}}"], "path": ["users", "{{user_id}}"] }
+          },
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"id\": \"user_id\",\n  \"username\": \"testuser\",\n  \"name\": \"Test User\",\n  \"email\": \"testuser@example.com\",\n  \"created_at\": \"2025-06-27T12:00:00\"\n}"
+        },
+        {
+          "name": "Not Found",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/users/invalid_id", "host": ["{{base_url}}"], "path": ["users", "invalid_id"] }
+          },
+          "status": "Not Found",
+          "code": 404,
+          "body": "{\n  \"error\": \"User not found\",\n  \"type\": \"HTTPException\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "List Users",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "url": { "raw": "{{base_url}}/users/", "host": ["{{base_url}}"], "path": ["users", ""] }
+      },
+      "response": [
+        {
+          "name": "Success",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/users/", "host": ["{{base_url}}"], "path": ["users", ""] }
+          },
+          "status": "OK",
+          "code": 200,
+          "body": "[\n  {\n    \"id\": \"user_id\",\n    \"username\": \"testuser\",\n    \"name\": \"Test User\",\n    \"email\": \"testuser@example.com\",\n    \"created_at\": \"2025-06-27T12:00:00\"\n  },\n  ...\n]"
+        }
+      ]
+    },
+    {
+      "name": "Update User",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{access_token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": { "raw": "{{base_url}}/users/{{user_id}}", "host": ["{{base_url}}"], "path": ["users", "{{user_id}}"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Updated Name\"\n}"
+        }
+      },
+      "response": [
+        {
+          "name": "Success",
+          "originalRequest": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/users/{{user_id}}", "host": ["{{base_url}}"], "path": ["users", "{{user_id}}"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Name\"\n}"
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"id\": \"user_id\",\n  \"username\": \"testuser\",\n  \"name\": \"Updated Name\",\n  \"email\": \"testuser@example.com\",\n  \"created_at\": \"2025-06-27T12:00:00\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Delete User",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "url": { "raw": "{{base_url}}/users/{{user_id}}", "host": ["{{base_url}}"], "path": ["users", "{{user_id}}"] }
+      },
+      "response": [
+        {
+          "name": "Success",
+          "originalRequest": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/users/{{user_id}}", "host": ["{{base_url}}"], "path": ["users", "{{user_id}}"] }
+          },
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"message\": \"User deleted successfully\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Create Todo",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{access_token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": { "raw": "{{base_url}}/todos/", "host": ["{{base_url}}"], "path": ["todos", ""] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Buy groceries\",\n  \"content\": \"Milk, Bread, Eggs\",\n  \"priority\": 1,\n  \"due_date\": \"2025-07-01T12:00:00\"\n}"
+        }
+      },
+      "response": [
+        {
+          "name": "Success",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/todos/", "host": ["{{base_url}}"], "path": ["todos", ""] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Buy groceries\",\n  \"content\": \"Milk, Bread, Eggs\",\n  \"priority\": 1,\n  \"due_date\": \"2025-07-01T12:00:00\"\n}"
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"id\": \"todo_id\",\n  \"title\": \"Buy groceries\",\n  \"content\": \"Milk, Bread, Eggs\",\n  \"priority\": 1,\n  \"due_date\": \"2025-07-01T12:00:00\",\n  \"user_id\": \"user_id\",\n  \"completed\": false\n}"
+        }
+      ]
+    },
+    {
+      "name": "Get Todo by ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "url": { "raw": "{{base_url}}/todos/{{todo_id}}", "host": ["{{base_url}}"], "path": ["todos", "{{todo_id}}"] }
+      },
+      "response": [
+        {
+          "name": "Success",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/todos/{{todo_id}}", "host": ["{{base_url}}"], "path": ["todos", "{{todo_id}}"] }
+          },
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"id\": \"todo_id\",\n  \"title\": \"Buy groceries\",\n  \"content\": \"Milk, Bread, Eggs\",\n  \"priority\": 1,\n  \"due_date\": \"2025-07-01T12:00:00\",\n  \"user_id\": \"user_id\",\n  \"completed\": false\n}"
+        }
+      ]
+    },
+    {
+      "name": "List Todos",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "url": { "raw": "{{base_url}}/todos/", "host": ["{{base_url}}"], "path": ["todos", ""] }
+      },
+      "response": [
+        {
+          "name": "Success",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/todos/", "host": ["{{base_url}}"], "path": ["todos", ""] }
+          },
+          "status": "OK",
+          "code": 200,
+          "body": "[\n  {\n    \"id\": \"todo_id\",\n    \"title\": \"Buy groceries\",\n    \"content\": \"Milk, Bread, Eggs\",\n    \"priority\": 1,\n    \"due_date\": \"2025-07-01T12:00:00\",\n    \"user_id\": \"user_id\",\n    \"completed\": false\n  },\n  ...\n]"
+        }
+      ]
+    },
+    {
+      "name": "Update Todo",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{access_token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": { "raw": "{{base_url}}/todos/{{todo_id}}", "host": ["{{base_url}}"], "path": ["todos", "{{todo_id}}"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Buy groceries (updated)\",\n  \"content\": \"Milk, Bread, Eggs, Cheese\",\n  \"priority\": 2\n}"
+        }
+      },
+      "response": [
+        {
+          "name": "Success",
+          "originalRequest": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/todos/{{todo_id}}", "host": ["{{base_url}}"], "path": ["todos", "{{todo_id}}"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Buy groceries (updated)\",\n  \"content\": \"Milk, Bread, Eggs, Cheese\",\n  \"priority\": 2\n}"
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"id\": \"todo_id\",\n  \"title\": \"Buy groceries (updated)\",\n  \"content\": \"Milk, Bread, Eggs, Cheese\",\n  \"priority\": 2,\n  \"due_date\": \"2025-07-01T12:00:00\",\n  \"user_id\": \"user_id\",\n  \"completed\": false\n}"
+        }
+      ]
+    },
+    {
+      "name": "Delete Todo",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "url": { "raw": "{{base_url}}/todos/{{todo_id}}", "host": ["{{base_url}}"], "path": ["todos", "{{todo_id}}"] }
+      },
+      "response": [
+        {
+          "name": "Success",
+          "originalRequest": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/todos/{{todo_id}}", "host": ["{{base_url}}"], "path": ["todos", "{{todo_id}}"] }
+          },
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"message\": \"Todo deleted successfully\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "NLP Suggestions",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{access_token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": { "raw": "{{base_url}}/todos/nlp/", "host": ["{{base_url}}"], "path": ["todos", "nlp", ""] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"description\": \"Finish the quarterly report\"\n}"
+        }
+      },
+      "response": [
+        {
+          "name": "Success",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/todos/nlp/", "host": ["{{base_url}}"], "path": ["todos", "nlp", ""] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Finish the quarterly report\"\n}"
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"suggestions\": [\n    \"Break the report into sections\",\n    \"Set a deadline for each section\",\n    \"Review previous reports for reference\"\n  ]\n}"
+        }
+      ]
+    },
+    {
+      "name": "Productivity Analysis",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "url": { "raw": "{{base_url}}/todos/analyze/", "host": ["{{base_url}}"], "path": ["todos", "analyze", ""] }
+      },
+      "response": [
+        {
+          "name": "Success",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/todos/analyze/", "host": ["{{base_url}}"], "path": ["todos", "analyze", ""] }
+          },
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"completed_tasks\": 5,\n  \"total_tasks\": 8,\n  \"overdue_tasks\": 2,\n  \"completion_rate\": 62.5,\n  \"insights\": [\n    \"Consider prioritizing your tasks to improve completion rates.\",\n    \"You have 2 overdue tasks. Try to complete them as soon as possible.\"\n  ],\n  \"suggestions\": [\n    \"Break large tasks into smaller steps\",\n    \"Set daily goals for task completion\"\n  ]\n}"
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "base_url", "value": "https://test.quickreceipt.store" },
+    { "key": "access_token", "value": "" },
+    { "key": "user_id", "value": "" },
+    { "key": "todo_id", "value": "" }
+  ]
+}

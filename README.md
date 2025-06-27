@@ -140,3 +140,23 @@ To add tests, consider using [pytest](https://docs.pytest.org/) and [httpx](http
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## API Testing with Postman
+
+A ready-to-use Postman collection is provided in `postman_collection.json`. This collection includes:
+
+- All user and todo endpoints, including advanced features (NLP suggestions, productivity analysis)
+- Example requests and responses for every route (success and error cases)
+- Variables for `base_url`, `access_token`, `user_id`, and `todo_id` to streamline testing
+
+### How to Use
+
+1. Open Postman and click "Import".
+2. Select the `postman_collection.json` file from this repository.
+3. Set the `base_url` variable (e.g., `http://localhost:8000` if running locally).
+4. Register a user and log in to obtain an access token, then set the `access_token` variable.
+5. Use the provided examples to understand the expected request and response formats before sending your own requests.
+
+This makes it easy for anyone to test and explore the API interactively.
