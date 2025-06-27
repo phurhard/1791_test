@@ -182,3 +182,34 @@ def generate_ai_suggestions(data: dict) -> dict:
     except Exception:
         # Fallback: return the raw output as a single suggestion
         return {"suggestions": [output]}
+
+def expand_description(description: str) -> str:
+    """
+    Expand the input description using OpenAI or a simple fallback.
+    """
+    try:
+        system_prompt = (
+            "You are a helpful assistant. Expand the following short todo/task description into a more detailed, actionable description. "
+            "Be clear and concise."
+        )
+        response = client.responses.create(
+            model="gpt-4o",
+            instructions=system_prompt,
+            input=description,
+            temperature=0.5
+        )
+        return response.output_text.strip()
+    except Exception:
+        # Fallback: just return the original description
+        return description
+
+def generate_title_from_description(expanded: str) -> str:
+    """
+    Generate a title from the expanded description (first sentence or up to 10 words).
+    """
+    if not expanded:
+        return "Untitled Task"
+    # Use the first sentence or first 10 words as the title
+    first_sentence = expanded.split(".")[0]
+    words = first_sentence.split()
+    return " ".join(words[:10]) + ("..." if len(words) > 10 else "")

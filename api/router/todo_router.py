@@ -4,8 +4,9 @@ from api.utils.dependencies import get_current_user
 from sqlalchemy.orm import Session
 from api.database.database import init_db
 from api.schemas.todo import TodoCreate, TodoResponse, TodoUpdate
-from api.services.todo_service import create_todo, get_todo, get_todos, update_todo, delete_todo, analyze_productivity
+from api.services.todo_service import create_todo, expand_description, generate_title_from_description, get_todo, get_todos, update_todo, delete_todo, analyze_productivity
 import spacy
+
 
 # Load the SpaCy model
 nlp = spacy.load("en_core_web_sm")
@@ -118,27 +119,16 @@ def create_todo_nlp_endpoint(description: str, db: Session = Depends(init_db), c
     Returns:
         TodoResponse: The created todo item.
     """
-    # Process the natural language input
-    doc = nlp(description)
-    task_description = " ".join([token.text for token in doc if not token.is_stop and not token.is_punct])
-    print(f'doc: {doc}')
-    print(f"description: {description}")
-    
-    # Enhance parsing to capture task details
-    entities = [(ent.text, ent.label_) for ent in doc.ents]
-    due_date = None
-    for entity in entities:
-        if entity[1] == "DATE":
-            due_date = entity[0]
-            print(f"due date: {due_date}")
-    
-    # Create a TodoCreate object with the task description and due date
+    # Expand the input description
+    expanded_description = expand_description(description)
+    # Generate a title from the expanded description
+    generated_title = generate_title_from_description(expanded_description)
+    # Create a TodoCreate object with the generated title and expanded content
     todo_data = TodoCreate(
-        title=task_description,
-        content="No additional details provided",
+        title=generated_title,
+        content=expanded_description,
         priority=1
     )
-    
     return create_todo(db, todo_data, str(current_user.id))
 
 @router.get("/productivity/")
