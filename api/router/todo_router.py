@@ -133,6 +133,10 @@ def create_todo_nlp_endpoint(description: str, db: Session = Depends(init_db), c
             print(f"due date: {due_date}")
     
     # Create a TodoCreate object with the task description and due date
-    todo_data = TodoCreate(title=task_description, content="No additional details provided")  # Placeholder content
+    todo_data = TodoCreate(
+        title=task_description,
+        content="No additional details provided",
+        priority=1
+    )
     
     return create_todo(db, todo_data, str(current_user.id))

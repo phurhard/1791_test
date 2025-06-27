@@ -2,7 +2,7 @@ from typing import Optional, List
 from sqlalchemy.orm import Session
 from api.models.model import Todo
 from api.schemas.todo import TodoCreate, TodoUpdate
-
+from datetime import datetime
 
 def create_todo(db: Session, todo: TodoCreate, user_id: str) -> Todo:
     """
@@ -89,3 +89,30 @@ def delete_todo(db: Session, todo_id: str, user_id: str) -> bool:
         db.commit()
         return True
     return False
+
+
+def analyze_productivity(db: Session) -> dict:
+    """
+    Analyze task completion data to generate productivity reports.
+
+    Args:
+        db (Session): The database session.
+
+    Returns:
+        dict: A dictionary containing productivity metrics and insights.
+    """
+    completed_tasks = db.query(Todo).filter(
+        Todo.completed == True
+    ).count()
+    total_tasks = db.query(Todo).count()
+    overdue_tasks = db.query(Todo).filter(
+        Todo.due_date < datetime.now(),
+        Todo.completed == False
+    ).count()
+
+    return {
+        "completed_tasks": completed_tasks,
+        "total_tasks": total_tasks,
+        "overdue_tasks": overdue_tasks,
+        # Add more metrics as needed
+    }
