@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from api.models.model import Todo
 from api.schemas.todo import TodoCreate, TodoUpdate
 
+
 def create_todo(db: Session, todo: TodoCreate, user_id: str) -> Todo:
     """
     Create a new todo item in the database.
@@ -15,7 +16,7 @@ def create_todo(db: Session, todo: TodoCreate, user_id: str) -> Todo:
     Returns:
         Todo: The created todo object.
     """
-    db_todo = Todo(content=todo.content, user_id=user_id, title=todo.title)
+    db_todo = Todo(content=todo.content, user_id=user_id, title=todo.title, priority=todo.priority, due_date=todo.due_date)
     db.add(db_todo)
     db.commit()
     db.refresh(db_todo)
