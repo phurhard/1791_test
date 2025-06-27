@@ -120,10 +120,19 @@ def create_todo_nlp_endpoint(description: str, db: Session = Depends(init_db), c
     """
     # Process the natural language input
     doc = nlp(description)
-    print(f'doc: {doc}')
     task_description = " ".join([token.text for token in doc if not token.is_stop and not token.is_punct])
+    print(f'doc: {doc}')
     print(f"description: {description}")
-    # Create a TodoCreate object
-    todo_data = TodoCreate(description=task_description)
+    
+    # Enhance parsing to capture task details
+    entities = [(ent.text, ent.label_) for ent in doc.ents]
+    due_date = None
+    for entity in entities:
+        if entity[1] == "DATE":
+            due_date = entity[0]
+            print(f"due date: {due_date}")
+    
+    # Create a TodoCreate object with the task description and due date
+    todo_data = TodoCreate(title=task_description, content="No additional details provided")  # Placeholder content
     
     return create_todo(db, todo_data, str(current_user.id))
