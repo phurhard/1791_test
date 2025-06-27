@@ -3,10 +3,12 @@
 A FastAPI application for managing user accounts and todo items with authentication and database persistence.
 
 ## Features
-- User authentication system
+- User authentication system (JWT-based)
 - Todo item CRUD operations
 - User-todo relationship management
-- SQLite database support
+- **AI-powered NLP suggestions for todos**
+- **Productivity analysis endpoint**
+- SQLite database support (default) or PostgreSQL
 - API documentation via Swagger UI
 
 ## Project Structure
@@ -19,7 +21,7 @@ todo-api/
 │   ├── models/           # SQLAlchemy models
 │   ├── router/           # API endpoints
 │   ├── schemas/          # Pydantic models
-│   └── services/         # Business logic
+│   ├── services/         # Business logic
 │   └── utils/            # Dependencies
 ├── db/                   # Database files
 ├── main.py               # Application entry point
@@ -34,21 +36,42 @@ todo-api/
 
 ### Installation
 1. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
+    ```bash
+    pip install -r requirements.txt
+    ```
 
 2. Create database file (if using SQLite):
-```bash
-touch db/database.db
-```
+    ```bash
+    mkdir -p db
+    touch db/database.db
+    ```
 
 ### Configuration
-Create a `.env` file with:
+
+Create a `.env` file in the project root with the following variables:
 ```env
 SECRET_KEY=your-secret-key-here
 ALGORITHM=HS256
+DATABASE_URL=sqlite:///./db/database.db  # Or your PostgreSQL URL
+ACCESS_TOKEN_EXPIRE_MINUTES=30
 ```
+- `SECRET_KEY`: Used for JWT token signing.
+- `ALGORITHM`: JWT signing algorithm.
+- `DATABASE_URL`: SQLAlchemy database URL.
+- `ACCESS_TOKEN_EXPIRE_MINUTES`: Token expiration time.
+
+### Database Migrations
+
+This project uses Alembic for database migrations.
+
+- To create a new migration after modifying models:
+    ```bash
+    alembic revision --autogenerate -m "Your migration message"
+    ```
+- To apply migrations:
+    ```bash
+    alembic upgrade head
+    ```
 
 ### Running the Application
 ```bash
@@ -59,6 +82,7 @@ uvicorn main:app --reload
 
 ### Users
 - `POST /users/` - Create a new user
+- `POST /users/login` - Obtain JWT access token
 - `GET /users/{user_id}` - Get user details
 - `GET /users/` - List all users
 - `PUT /users/{user_id}` - Update user information
@@ -71,10 +95,41 @@ uvicorn main:app --reload
 - `PUT /todos/{todo_id}` - Update a todo (requires auth)
 - `DELETE /todos/{todo_id}` - Delete a todo (requires auth)
 
+### Advanced Endpoints
+
+- `POST /todos/nlp/` - **Generate AI-powered suggestions for a todo description**  
+    **Request:**  
+    ```json
+    {
+      "description": "Finish the quarterly report"
+    }
+    ```
+    **Response:**  
+    ```json
+    {
+      "suggestions": ["Break the report into sections", "Set a deadline for each section"]
+    }
+    ```
+
+- `GET /todos/analyze/` - **Analyze productivity based on todos**  
+    **Response:**  
+    ```json
+    {
+      "completed": 5,
+      "pending": 3,
+      "productivity_score": 0.62
+    }
+    ```
+
 ## Authentication
-- Use `/docs` endpoint to test authentication
-- Authentication tokens are required for todo operations
-- Token expiration is handled automatically
+- Use `/docs` endpoint to test authentication and try endpoints interactively.
+- Authentication tokens (JWT) are required for protected endpoints.
+- Token expiration is handled automatically.
+
+## Testing
+
+*No automated tests are present yet.*  
+To add tests, consider using [pytest](https://docs.pytest.org/) and [httpx](https://www.python-httpx.org/) for API testing.
 
 ## Contributing
 1. Fork the repository
