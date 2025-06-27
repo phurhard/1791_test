@@ -1,4 +1,5 @@
 from typing import Optional, List
+from sqlalchemy import over
 from sqlalchemy.orm import Session
 from api.models.model import Todo
 from api.schemas.todo import TodoCreate, TodoUpdate
@@ -110,9 +111,18 @@ def analyze_productivity(db: Session) -> dict:
         Todo.completed == False
     ).count()
 
+    completion_rate = (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0
+    insights = []
+
+    if completion_rate < 50:
+        insights.append("Consider prioritizing your tasks to improve completion rates.")
+    if overdue_tasks > 0:
+        insights.append(f"You have {overdue_tasks} overdue tasks. Try to complete them as soon as possible.")
+
     return {
         "completed_tasks": completed_tasks,
         "total_tasks": total_tasks,
         "overdue_tasks": overdue_tasks,
-        # Add more metrics as needed
+        "completion_rate": completion_rate,
+        "insights": insights,
     }

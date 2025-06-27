@@ -4,7 +4,7 @@ from api.utils.dependencies import get_current_user
 from sqlalchemy.orm import Session
 from api.database.database import init_db
 from api.schemas.todo import TodoCreate, TodoResponse, TodoUpdate
-from api.services.todo_service import create_todo, get_todo, get_todos, update_todo, delete_todo
+from api.services.todo_service import create_todo, get_todo, get_todos, update_todo, delete_todo, analyze_productivity
 import spacy
 
 # Load the SpaCy model
@@ -140,3 +140,16 @@ def create_todo_nlp_endpoint(description: str, db: Session = Depends(init_db), c
     )
     
     return create_todo(db, todo_data, str(current_user.id))
+
+@router.get("/productivity/")
+def analyze_productivity_endpoint(db: Session = Depends(init_db)):
+    """
+    Analyze productivity metrics.
+
+    Args:
+        db (Session): The database session.
+
+    Returns:
+        dict: A dictionary containing productivity metrics and insights.
+    """
+    return analyze_productivity(db)
