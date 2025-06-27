@@ -1,9 +1,12 @@
 from typing import Optional, List
-from sqlalchemy import over
+from openai import OpenAI
 from sqlalchemy.orm import Session
+from api.core.settings import settings
 from api.models.model import Todo
 from api.schemas.todo import TodoCreate, TodoUpdate
 from datetime import datetime
+
+client = OpenAI(api_key = settings.OPENAI_API_KEY)
 
 def create_todo(db: Session, todo: TodoCreate, user_id: str) -> Todo:
     """
@@ -125,4 +128,49 @@ def analyze_productivity(db: Session) -> dict:
         "overdue_tasks": overdue_tasks,
         "completion_rate": completion_rate,
         "insights": insights,
+        "suggestions": generate_ai_suggestions({
+            "completion_rate": completion_rate,
+            "overdue_tasks": overdue_tasks,
+            "completed_tasks": completed_tasks,
+        }),
+    }
+
+
+def generate_ai_suggestions(data: dict) -> dict:
+    """Returns AI suggestions based on user todo behavior"""
+    
+    # Build system prompt
+    system_prompt = (
+        "You are an advanced productivity assistant. Analyze the user's to-do list "
+        "data and provide 3-5 personalized suggestions to help improve their productivity. "
+        "Consider their completed tasks, overdue tasks, and task completion frequency."
+    )
+
+    # Construct a formatted message
+    user_prompt = (
+        f"Here is the user's task data:\n\n"
+        f"Completed Tasks: {data.get('completed_tasks', [])}\n"
+        f"Overdue Tasks: {data.get('overdue_tasks', [])}\n"
+        f"Pending Tasks: {data.get('pending_tasks', [])}\n\n"
+    )
+
+    if "completion_history" in data:
+        user_prompt += "Completion History:\n"
+        for entry in data["completion_history"]:
+            user_prompt += f"- {entry['date']}: {entry['completed_count']} tasks completed\n"
+
+    user_prompt += "\nPlease provide tailored suggestions."
+
+    # Chat completion call
+    response = client.responses.create(
+        model="gpt-4o",
+        instructions= system_prompt,
+        input=user_prompt,
+        temperature=0.7
+    )
+
+    suggestions = response.output_text
+
+    return {
+        "suggestions": suggestions.strip()
     }
