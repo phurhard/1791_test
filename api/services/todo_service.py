@@ -1,3 +1,4 @@
+import json
 from typing import Optional, List
 from openai import OpenAI
 from sqlalchemy.orm import Session
@@ -141,9 +142,10 @@ def generate_ai_suggestions(data: dict) -> dict:
     
     # Build system prompt
     system_prompt = (
-        "You are an advanced productivity assistant. Analyze the user's to-do list "
-        "data and provide 3-5 personalized suggestions to help improve their productivity. "
-        "Consider their completed tasks, overdue tasks, and task completion frequency."
+        "You are an advanced productivity assistant. Analyze the user's to-do list data and provide 3-5 personalized suggestions "
+        "to help improve their productivity. Consider their completed tasks, overdue tasks, and task completion frequency. "
+        "Return your response as a JSON object in the following format: "
+        "{\"suggestions\": [\"suggestion 1\", \"suggestion 2\", \"suggestion 3\"]}. Do not include any text outside the JSON object."
     )
 
     # Construct a formatted message
@@ -164,13 +166,19 @@ def generate_ai_suggestions(data: dict) -> dict:
     # Chat completion call
     response = client.responses.create(
         model="gpt-4o",
-        instructions= system_prompt,
+        instructions=system_prompt,
         input=user_prompt,
         temperature=0.7
     )
 
-    suggestions = response.output_text
-
-    return {
-        "suggestions": suggestions.strip()
-    }
+    output = response.output_text.strip()
+    try:
+        # Try to parse the output as JSON
+        result = json.loads(output)
+        if isinstance(result, dict) and "suggestions" in result:
+            return result
+        # If not in expected format, fallback
+        return {"suggestions": result if isinstance(result, list) else [str(result)]}
+    except Exception:
+        # Fallback: return the raw output as a single suggestion
+        return {"suggestions": [output]}
