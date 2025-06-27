@@ -27,8 +27,8 @@ class Todo(BaseModel):
     content = Column(Text, nullable=False)
     user_id = Column(String(36), ForeignKey('users.id'), nullable=False)
     completed = Column(Boolean, default=False)
-    priority = Column(Integer, nullable=False)
-    due_date = Column(DateTime, default=func.now)
+    priority = Column(Integer, nullable=True)
+    due_date = Column(DateTime, default=func.now())
 
     user = relationship("User", back_populates="todos")
 
