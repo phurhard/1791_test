@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from api.database.database import init_db
 from api.schemas.user import UserCreate, UserUpdate, UserResponse, UserLogin, TokenResponse
 from api.services.user_service import create_user, get_user, get_users, update_user, delete_user, login_user
+from fastapi import Body
+from api.services.user_service import refresh_access_token
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -22,6 +24,27 @@ def login_for_access_token(user_login: UserLogin, db: Session = Depends(init_db)
         HTTPException: If authentication fails.
     """
     return login_user(db, user_login)
+
+
+@router.post("/refresh", response_model=TokenResponse)
+def refresh_token_endpoint(
+    refresh_token: str = Body(..., embed=True),
+    db: Session = Depends(init_db)
+):
+    """
+    Refresh the access token using a valid refresh token.
+
+    Args:
+        refresh_token (str): The refresh token.
+        db (Session): The database session.
+
+    Returns:
+        TokenResponse: New access and refresh tokens.
+
+    Raises:
+        HTTPException: If the refresh token is invalid or expired.
+    """
+    return refresh_access_token(db, refresh_token)
 
 
 @router.post("/", response_model=UserResponse)

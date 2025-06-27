@@ -5,7 +5,7 @@ from sqlalchemy import or_
 from datetime import timedelta
 from api.models.model import User
 from api.schemas.user import UserCreate, UserUpdate, UserLogin, TokenResponse, UserResponse
-from api.utils.dependencies import get_pass_hash, check_pass_hash, create_access_token
+from api.utils.dependencies import get_pass_hash, check_pass_hash, create_access_token, decode_token
 
 def get_user_by_email(db: Session, email: str) -> Optional[User]:
     """
@@ -194,3 +194,45 @@ def login_user(db: Session, user_login: UserLogin) -> TokenResponse:
         refresh_token=refresh_token,
         token_type="bearer"
     )
+
+def refresh_access_token(db: Session, refresh_token: str) -> TokenResponse:
+    """
+    Validates the refresh token and issues a new access token (and refresh token).
+
+    Args:
+        db (Session): The database session.
+        refresh_token (str): The refresh token.
+
+    Returns:
+        TokenResponse: An object containing user details, new access token, and refresh token.
+
+    Raises:
+        HTTPException: If the refresh token is invalid or expired.
+    """
+    try:
+        user_id = decode_token(refresh_token)
+        user = get_user(db, user_id)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid refresh token"
+            )
+        access_token_expires = timedelta(minutes=30)
+        refresh_token_expires = timedelta(days=7)
+        access_token = create_access_token(
+            data={"sub": str(user.id)}, expires_delta=int(access_token_expires.total_seconds() / 60)
+        )
+        new_refresh_token = create_access_token(
+            data={"sub": str(user.id)}, expires_delta=int(refresh_token_expires.total_seconds() / 60)
+        )
+        return TokenResponse(
+            user=UserResponse.model_validate(user),
+            access_token=access_token,
+            refresh_token=new_refresh_token,
+            token_type="bearer"
+        )
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired refresh token"
+        )
