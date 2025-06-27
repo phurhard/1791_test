@@ -5,7 +5,10 @@ from sqlalchemy.orm import Session
 from api.database.database import init_db
 from api.schemas.todo import TodoCreate, TodoResponse, TodoUpdate
 from api.services.todo_service import create_todo, get_todo, get_todos, update_todo, delete_todo
+import spacy
 
+# Load the SpaCy model
+nlp = spacy.load("en_core_web_sm")
 router = APIRouter(prefix="/todos", tags=["Todos"])
 
 @router.post("/", response_model=TodoResponse)
@@ -101,3 +104,26 @@ def delete_todo_endpoint(todo_id: str, db: Session = Depends(init_db), current_u
     if not deleted_todo:
         raise HTTPException(status_code=404, detail="Todo not found")
     return deleted_todo
+
+@router.post("/nlp/", response_model=TodoResponse)
+def create_todo_nlp_endpoint(description: str, db: Session = Depends(init_db), current_user: User = Depends(get_current_user)):
+    """
+    Create a new todo item from natural language input.
+
+    Args:
+        description (str): The natural language description of the todo item.
+        db (Session): The database session.
+        current_user (User): The authenticated user.
+
+    Returns:
+        TodoResponse: The created todo item.
+    """
+    # Process the natural language input
+    doc = nlp(description)
+    print(f'doc: {doc}')
+    task_description = " ".join([token.text for token in doc if not token.is_stop and not token.is_punct])
+    print(f"description: {description}")
+    # Create a TodoCreate object
+    todo_data = TodoCreate(description=task_description)
+    
+    return create_todo(db, todo_data, str(current_user.id))
